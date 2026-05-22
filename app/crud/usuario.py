@@ -17,3 +17,11 @@ def get_usuario_by_correo(db: Session, correo: str):
 # Listar usuarios
 def get_usuarios(db: Session):
     return db.query(Usuario).all()
+
+# Eliminar usuario
+def delete_usuario(db: Session, id_usuario: int):
+    usuario = db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
+    if usuario:
+        db.delete(usuario)
+        db.commit()
+    return usuario
