@@ -5,7 +5,7 @@ from app.crud import usuario as crud_usuario
 from app.auth.auth import require_scopes
 from app.db import get_db
 
-router = APIRouter(prefix="/usuarios", tags=["usuarios"])
+router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
 # Endpoint admin: crear usuario
 @router.post("/", status_code=status.HTTP_201_CREATED)

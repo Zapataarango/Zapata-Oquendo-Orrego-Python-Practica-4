@@ -5,7 +5,7 @@ from app.crud import espacio as crud_espacio
 from app.auth.auth import require_scopes
 from app.db import get_db
 
-router = APIRouter(prefix="/espacios", tags=["espacios"])
+router = APIRouter(prefix="/espacios", tags=["Espacios"])
 
 # Endpoint admin: crear espacio
 @router.post("/", status_code=status.HTTP_201_CREATED)

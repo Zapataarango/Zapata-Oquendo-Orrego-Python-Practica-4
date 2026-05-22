@@ -6,7 +6,7 @@ from app.crud import reserva as crud_reserva
 from app.auth.auth import require_scopes, get_current_user
 from app.db import get_db
 
-router = APIRouter(prefix="/reservas", tags=["reservas"])
+router = APIRouter(prefix="/reservas", tags=["Reservas"])
 
 # Endpoint para crear una reserva inicial (usuario autenticado)
 @router.post("/", response_model=ReservaOut, status_code=status.HTTP_201_CREATED)
