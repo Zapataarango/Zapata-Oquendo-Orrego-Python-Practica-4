@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from app.api import usuarios, reservas, espacios
-# from app.db import engine, Base
+from app.api import auth, usuarios, reservas, espacios
+from app.db import engine, Base
 
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Sistema de Reservas",
@@ -11,6 +11,7 @@ app = FastAPI(
     swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 
 # Registrar routers
+app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(reservas.router)
 app.include_router(espacios.router)

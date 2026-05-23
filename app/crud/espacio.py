@@ -3,7 +3,6 @@ from app.models.espacio import Espacio
 from app.schemas.espacio import EspacioCreate
 
 # Crear espacio
-
 def create_espacio(db: Session, espacio: EspacioCreate):
     db_espacio = Espacio(**espacio.dict())
     db.add(db_espacio)
@@ -12,7 +11,6 @@ def create_espacio(db: Session, espacio: EspacioCreate):
     return db_espacio
 
 # Eliminar espacio
-
 def delete_espacio(db: Session, id_espacio: int):
     espacio = db.query(Espacio).filter(Espacio.id_espacio == id_espacio).first()
     if espacio:
@@ -20,7 +18,10 @@ def delete_espacio(db: Session, id_espacio: int):
         db.commit()
     return espacio
 
-# Listar espacios
+# Obtener todos los espacios
+def get_all_espacios(db: Session):
+    return db.query(Espacio).all()
 
+# Listar espacios (legacy)
 def get_espacios(db: Session):
     return db.query(Espacio).all()

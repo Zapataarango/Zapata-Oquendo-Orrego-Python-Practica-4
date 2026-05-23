@@ -1,41 +1,57 @@
-from fastapi import Body
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import Body, APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.schemas.reserva import ReservaCreate, ReservaOut
+from app.schemas.reserva import ReservaCreate, ReservaOut, EstadoReserva
 from app.crud import reserva as crud_reserva
 from app.auth.auth import require_scopes, get_current_user
 from app.db import get_db
+from app.models.usuario import Usuario
 
 router = APIRouter(prefix="/reservas", tags=["Reservas"])
 
-# Endpoint para crear una reserva inicial (usuario autenticado)
+# Endpoint para crear una reserva (usuario autenticado)
 @router.post("/", response_model=ReservaOut, status_code=status.HTTP_201_CREATED)
 def crear_reserva(
-	reserva_in: ReservaCreate,
-	db: Session = Depends(get_db),
-	user = Depends(require_scopes("usuario:crear_reserva"))
+    reserva_in: ReservaCreate,
+    db: Session = Depends(get_db),
+    user: Usuario = Depends(require_scopes("usuario:crear_reserva"))
 ):
-	# Forzar que la reserva sea del usuario autenticado
-	reserva_data = reserva_in.dict()
-	reserva_data["id_usuario"] = user.id_usuario
-	reserva_data["estado"] = "esperando"
-	reserva_crear = ReservaCreate(**reserva_data)
-	return crud_reserva.create_reserva(db, reserva_crear)
+    """Crear una nueva reserva. El usuario crea una reserva para sí mismo en estado 'esperando' aprobación."""
+    reserva_data = reserva_in.dict()
+    reserva_data["id_usuario"] = user.id_usuario
+    reserva_data["estado"] = "esperando"
+    reserva_crear = ReservaCreate(**reserva_data)
+    return crud_reserva.create_reserva(db, reserva_crear)
 
+# Endpoint para obtener mis reservas
+@router.get("/mis-reservas", response_model=list[ReservaOut])
+def mis_reservas(
+    db: Session = Depends(get_db),
+    user: Usuario = Depends(require_scopes("usuario:ver_reservas"))
+):
+    """Ver las reservas del usuario autenticado."""
+    return crud_reserva.get_reservas_by_usuario(db, user.id_usuario)
+
+# Endpoint para que el admin vea todas las reservas
+@router.get("/", response_model=list[ReservaOut])
+def todas_las_reservas(
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(require_scopes("admin:ver_todas_reservas"))
+):
+    """Ver todas las reservas (solo admin)."""
+    return crud_reserva.get_all_reservas(db)
 
 # Endpoint para que el admin cambie el estado de una reserva
 @router.patch("/{id_reserva}/estado", response_model=ReservaOut)
 def cambiar_estado_reserva(
-	id_reserva: int,
-	nuevo_estado: str = Body(..., embed=True, example="aprobada"),
-	db: Session = Depends(get_db),
-	admin = Depends(require_scopes("admin:gestionar_reservas"))
+    id_reserva: int,
+    nuevo_estado: EstadoReserva = Body(..., embed=True, example="aprobada"),
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(require_scopes("admin:gestionar_reservas"))
 ):
-	reserva = crud_reserva.get_reserva_by_id(db, id_reserva)
-	if not reserva:
-		raise HTTPException(status_code=404, detail="Reserva no encontrada")
-	if reserva.estado != "esperando":
-		raise HTTPException(status_code=400, detail="Solo se puede cambiar el estado de reservas en estado 'esperando'")
-	if nuevo_estado not in ["aprobada", "rechazada"]:
-		raise HTTPException(status_code=400, detail="Estado no válido. Debe ser 'aprobada' o 'rechazada'")
-	return crud_reserva.update_estado_reserva(db, id_reserva, nuevo_estado)
+    """Cambiar estado de una reserva (solo admin). Estados válidos: esperando, aprobada, rechazada."""
+    reserva = crud_reserva.get_reserva_by_id(db, id_reserva)
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva no encontrada")
+    if reserva.estado != EstadoReserva.ESPERANDO.value:
+        raise HTTPException(status_code=400, detail="Solo se puede cambiar el estado de reservas en estado 'esperando'")
+    return crud_reserva.update_estado_reserva(db, id_reserva, nuevo_estado.value)

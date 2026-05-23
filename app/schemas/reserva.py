@@ -1,6 +1,13 @@
 from pydantic import BaseModel
 from datetime import date
 from typing import Optional
+from enum import Enum
+
+class EstadoReserva(str, Enum):
+    """Estados válidos para una reserva."""
+    ESPERANDO = "esperando"
+    APROBADA = "aprobada"
+    RECHAZADA = "rechazada"
 
 class ReservaBase(BaseModel):
     id_usuario: int
@@ -18,3 +25,4 @@ class ReservaOut(ReservaBase):
     id_reserva: int
     class Config:
         orm_mode = True
+

@@ -37,7 +37,7 @@ def create_access_token(data: dict) -> str:
     payload = data.copy()
     payload.update({"exp": expire})
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(payload, SECRET_KEY or "", algorithm=ALGORITHM)
     return token
 
 def get_current_user(
@@ -47,7 +47,7 @@ def get_current_user(
     token = credentials.credentials
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY or "", algorithms=[ALGORITHM])
         correo = payload.get("sub")
     except JWTError:
         raise HTTPException(
@@ -67,7 +67,7 @@ def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="Usuario no encontrado en la base de datos")
     
-    if not user.activo:
+    if user.activo is False:
         raise HTTPException(status_code=401, detail="La cuenta de usuario está desactivada")
 
     return user

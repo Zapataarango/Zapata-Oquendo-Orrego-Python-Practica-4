@@ -1,4 +1,7 @@
 
+from typing import TYPE_CHECKING, Union
+from sqlalchemy import Column  # pragma: no cover
+
 SCOPES_BY_ROLE = {
     "usuario": {
         "usuario:crear_reserva",
@@ -16,5 +19,11 @@ SCOPES_BY_ROLE = {
     }
 }
 
-def get_scopes_for_role(role: str) -> set[str]:
-    return SCOPES_BY_ROLE.get(role, set())
+def get_scopes_for_role(role: Union[str, "Column[str]"]) -> set[str]:
+    """Retorna los permisos (scopes) asociados a un rol.
+    
+    Acepta un string o un atributo Column de SQLAlchemy.
+    """
+    # En tiempo de ejecución, convertir a string si es necesario
+    role_value = str(role) if not isinstance(role, str) else role
+    return SCOPES_BY_ROLE.get(role_value, set())
