@@ -15,7 +15,8 @@ SCOPES_BY_ROLE = {
         "admin:crear_usuario",
         "admin:eliminar_usuario",
         "admin:crear_espacio",
-        "admin:eliminar_espacio"
+        "admin:eliminar_espacio",
+        "admin:listar_espacio"
     }
 }
 

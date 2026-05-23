@@ -8,13 +8,20 @@ from app.models.usuario import Usuario
 
 router = APIRouter(prefix="/espacios", tags=["Espacios"])
 
-# Endpoint público: listar espacios disponibles
-@router.get("/", response_model=list[EspacioOut])
-def listar_espacios(
+# Endpoint: listar espacios disponibles
+@router.get("/disponibles", response_model=list[EspacioOut])
+def listar_espacios_disponibles(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    """Listar todos los espacios disponibles (requiere autenticación)."""
+    return crud_espacio.get_espacios_disponibles(db)
+
+# Endpoint admin: listar todos los espacios
+@router.get("/", response_model=list[EspacioOut])
+def listar_todos_espacios(
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(require_scopes("admin:listar_espacio"))
+):
     return crud_espacio.get_all_espacios(db)
 
 # Endpoint admin: crear espacio
@@ -22,10 +29,15 @@ def listar_espacios(
 def crear_espacio(
     espacio_in: EspacioCreate,
     db: Session = Depends(get_db),
-    admin: Usuario = Depends(require_scopes("admin:crear_espacio"))
+    user: Usuario = Depends(require_scopes("admin:crear_espacio"))
 ):
     """Crear nuevo espacio (solo admin)."""
-    return crud_espacio.create_espacio(db, espacio_in)
+    
+    espacio_data = espacio_in.dict()
+    espacio_data["id_usuario"] = user.id_usuario
+    espacio_data["estado"] = "disponible"
+    espacio_crear = EspacioCreate(**espacio_data)
+    return crud_espacio.create_espacio(db, espacio_crear)
 
 # Endpoint admin: eliminar espacio
 @router.delete("/{id_espacio}", status_code=status.HTTP_204_NO_CONTENT)

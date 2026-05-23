@@ -6,7 +6,6 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Sistema de Reservas",
-    description="API para el control de soportes técnicos y laboratorios",
     version="1.0.0",
     swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 

@@ -22,6 +22,10 @@ def delete_espacio(db: Session, id_espacio: int):
 def get_all_espacios(db: Session):
     return db.query(Espacio).all()
 
+# Obtener espacios disponibles
+def get_espacios_disponibles(db: Session):
+    return db.query(Espacio).filter(Espacio.estado == "disponible").all()
+
 # Listar espacios (legacy)
 def get_espacios(db: Session):
     return db.query(Espacio).all()

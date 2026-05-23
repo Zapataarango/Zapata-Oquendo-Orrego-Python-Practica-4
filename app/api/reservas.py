@@ -29,7 +29,7 @@ def mis_reservas(
     user: Usuario = Depends(require_scopes("usuario:ver_reservas"))
 ):
     """Ver las reservas del usuario autenticado."""
-    return crud_reserva.get_reservas_by_usuario(db, user.id_usuario)
+    return crud_reserva.get_reservas_by_usuario(db, user.id_usuario) # type: ignore
 
 # Endpoint para que el admin vea todas las reservas
 @router.get("/", response_model=list[ReservaOut])
@@ -52,6 +52,6 @@ def cambiar_estado_reserva(
     reserva = crud_reserva.get_reserva_by_id(db, id_reserva)
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
-    if reserva.estado != EstadoReserva.ESPERANDO.value:
+    if reserva.estado != EstadoReserva.ESPERANDO.value: # type: ignore
         raise HTTPException(status_code=400, detail="Solo se puede cambiar el estado de reservas en estado 'esperando'")
     return crud_reserva.update_estado_reserva(db, id_reserva, nuevo_estado.value)

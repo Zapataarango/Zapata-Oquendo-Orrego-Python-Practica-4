@@ -22,7 +22,7 @@ def get_reservas_by_usuario(db: Session, id_usuario: int):
 def get_all_reservas(db: Session):
     return db.query(Reserva).all()
 
-# Listar reservas (legacy)
+# Listar reservas
 def get_reservas(db: Session):
     return db.query(Reserva).all()
 
