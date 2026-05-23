@@ -8,6 +8,7 @@ class EstadoReserva(str, Enum):
     ESPERANDO = "esperando"
     APROBADA = "aprobada"
     RECHAZADA = "rechazada"
+    CANCELADA = "cancelada"
     INACTIVO = "inactivo"
     MANTENIMIENTO = "mantenimiento"
     NO_DISPONIBLE = "no disponible"

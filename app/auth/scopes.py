@@ -12,6 +12,7 @@ SCOPES_BY_ROLE = {
         "usuario:ver_reservas",
         "admin:gestionar_reservas",
         "admin:ver_todas_reservas",
+        "admin:cancelar_reserva",
         "admin:crear_usuario",
         "admin:eliminar_usuario",
         "admin:crear_espacio",

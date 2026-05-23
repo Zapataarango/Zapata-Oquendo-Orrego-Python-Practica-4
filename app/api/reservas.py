@@ -43,7 +43,6 @@ def todas_las_reservas(
 
 # Endpoint para que el admin cambie el estado de una reserva
 @router.patch("/{id_reserva}/estado", response_model=ReservaOut)
-@router.patch("/{id_reserva}/estado")
 def actualizar_estado_reserva(
     id_reserva: int,
     estado: str,
@@ -54,4 +53,18 @@ def actualizar_estado_reserva(
         db=db,
         id_reserva=id_reserva,
         nuevo_estado=estado
+    )
+
+# Endpoint para que el admin cancele una reserva
+@router.patch("/{id_reserva}/cancelar", response_model=ReservaOut)
+def cancelar_reserva(
+    id_reserva: int,
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(
+        require_scopes("admin:cancelar_reserva")
+    )
+):
+    return crud_reserva.cancel_reserva(
+        db=db,
+        id_reserva=id_reserva
     )

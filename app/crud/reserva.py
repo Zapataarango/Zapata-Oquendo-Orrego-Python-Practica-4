@@ -255,3 +255,51 @@ def update_estado_reserva(
     db.refresh(reserva)
 
     return reserva
+
+# Cancelar reserva (cambia a estado cancelada)
+def cancel_reserva(
+    db: Session,
+    id_reserva: int
+):
+    reserva = db.query(Reserva).filter(
+        Reserva.id_reserva == id_reserva
+    ).first()
+
+    if not reserva:
+        raise HTTPException(
+            status_code=404,
+            detail="Reserva no encontrada"
+        )
+
+    # No permitir cancelar rechazadas
+    if reserva.estado == EstadoReserva.RECHAZADA.value: # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede cancelar una reserva rechazada"
+        )
+
+    # No permitir cancelar canceladas
+    if reserva.estado == EstadoReserva.CANCELADA.value: # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail="La reserva ya está cancelada"
+        )
+
+    # Solo esperando/aprobada
+    estados_cancelables = [
+        EstadoReserva.ESPERANDO.value,
+        EstadoReserva.APROBADA.value
+    ]
+
+    if reserva.estado not in estados_cancelables:
+        raise HTTPException(
+            status_code=400,
+            detail="La reserva no puede cancelarse"
+        )
+
+    reserva.estado = EstadoReserva.CANCELADA.value  # type: ignore
+
+    db.commit()
+    db.refresh(reserva)
+
+    return reserva
