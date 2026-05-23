@@ -8,15 +8,28 @@ from app.models.espacio import Espacio
 from app.models.reserva import Reserva
 from app.schemas.reserva import EstadoReserva, ReservaCreate
 
+from datetime import datetime, timedelta, time
+
+from fastapi import HTTPException
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from app.models.espacio import Espacio
+from app.models.reserva import Reserva
+from app.schemas.reserva import EstadoReserva, ReservaCreate
 
 
+# =========================
 # Crear reserva
+# =========================
 def create_reserva(
     db: Session,
     reserva: ReservaCreate,
     id_usuario: int
 ):
+  
     # Validar espacio existente
+
     espacio = db.query(Espacio).filter(
         Espacio.id_espacio == reserva.id_espacio
     ).first()
@@ -27,14 +40,33 @@ def create_reserva(
             detail="El espacio no existe"
         )
 
-    # Validar estado espacio
-    if espacio.estado != "disponible": # type: ignore
+  
+    # Regla G:
+    # Validar estado del espacio
+    estados_bloqueados = [
+        "inactivo",
+        "mantenimiento",
+        "no_disponible"
+    ]
+
+    if espacio.estado in estados_bloqueados:  # type: ignore
         raise HTTPException(
             status_code=400,
-            detail="El espacio no está disponible"
+            detail="El espacio no está disponible para reservas"
         )
 
-    # Construir datetime usando tipos date y time
+  
+    # Regla H:
+    # Validar capacidad máxima
+
+    if reserva.cantidad_asistentes > espacio.capacidad:  # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail=f"La capacidad máxima del espacio es {espacio.capacidad}"
+        )
+
+  
+    # Construir fechas
     fecha_inicio = datetime.combine(
         reserva.fecha,
         reserva.hora_inicio
@@ -47,25 +79,79 @@ def create_reserva(
 
     ahora = datetime.now()
 
-    # Validar anticipación mínima
-    if fecha_inicio < ahora + timedelta(hours=1):
+  
+    # Regla D:
+    # 24 horas anticipación
+    if fecha_inicio < ahora + timedelta(hours=24):
         raise HTTPException(
             status_code=400,
-            detail="La reserva debe realizarse con al menos 1 hora de anticipación"
+            detail="La reserva debe realizarse con mínimo 24 horas de anticipación"
         )
 
-    # Validar rango horario
+  
+    # Regla F:
+    # Hora inicio < hora fin
     if fecha_fin <= fecha_inicio:
         raise HTTPException(
             status_code=400,
             detail="La hora fin debe ser mayor que la hora inicio"
         )
 
-    # Validar conflictos de horario
+  
+    # Regla E:
+    # Validar horarios permitidos
+    dia_semana = reserva.fecha.weekday()
+
+    # Lunes a viernes
+    if dia_semana in [0, 1, 2, 3, 4]:
+
+        hora_min = time(7, 0)
+        hora_max = time(20, 0)
+
+        if (
+            reserva.hora_inicio < hora_min or
+            reserva.hora_fin > hora_max
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Horario permitido lunes-viernes: 07:00 - 20:00"
+            )
+
+    # Sábado
+    elif dia_semana == 5:
+
+        hora_min = time(8, 0)
+        hora_max = time(12, 0)
+
+        if (
+            reserva.hora_inicio < hora_min or
+            reserva.hora_fin > hora_max
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Horario permitido sábado: 08:00 - 12:00"
+            )
+
+    # Domingo
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="No se permiten reservas los domingos"
+        )
+
+  
+    # Regla C + I:
+    # Validar solapamiento
+    # Esperando y aprobada bloquean
+    # Rechazada NO bloquea
     conflicto = db.query(Reserva).filter(
         Reserva.id_espacio == reserva.id_espacio,
         Reserva.fecha == reserva.fecha,
-        Reserva.estado != EstadoReserva.RECHAZADA.value,
+
+        Reserva.estado.in_([
+            EstadoReserva.ESPERANDO.value,
+            EstadoReserva.APROBADA.value
+        ]),
 
         and_(
             Reserva.hora_inicio < reserva.hora_fin,
@@ -76,10 +162,13 @@ def create_reserva(
     if conflicto:
         raise HTTPException(
             status_code=409,
-            detail="El espacio ya está reservado en ese horario"
+            detail="Ya existe una reserva para ese espacio en el horario indicado"
         )
 
-    # Crear reserva
+  
+    # Regla I:
+    # Estado inicial esperando
+
     db_reserva = Reserva(
         id_usuario=id_usuario,
         id_espacio=reserva.id_espacio,
@@ -87,7 +176,7 @@ def create_reserva(
         hora_inicio=reserva.hora_inicio,
         hora_fin=reserva.hora_fin,
         cantidad_asistentes=reserva.cantidad_asistentes,
-        estado=EstadoReserva.APROBADA.value
+        estado=EstadoReserva.ESPERANDO.value
     )
 
     db.add(db_reserva)
@@ -130,7 +219,6 @@ def get_reservas(db: Session):
     return db.query(Reserva).all()
 
 
-# Actualizar estado reserva
 def update_estado_reserva(
     db: Session,
     id_reserva: int,
@@ -142,6 +230,23 @@ def update_estado_reserva(
         raise HTTPException(
             status_code=404,
             detail="Reserva no encontrada"
+        )
+
+    estados_validos = [
+        EstadoReserva.APROBADA.value,
+        EstadoReserva.RECHAZADA.value
+    ]
+
+    if nuevo_estado not in estados_validos:
+        raise HTTPException(
+            status_code=400,
+            detail="Estado inválido"
+        )
+
+    if reserva.estado != EstadoReserva.ESPERANDO.value: # type: ignore
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se pueden gestionar reservas en estado esperando"
         )
 
     reserva.estado = nuevo_estado  # type: ignore

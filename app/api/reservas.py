@@ -43,21 +43,15 @@ def todas_las_reservas(
 
 # Endpoint para que el admin cambie el estado de una reserva
 @router.patch("/{id_reserva}/estado", response_model=ReservaOut)
-def cambiar_estado_reserva(
+@router.patch("/{id_reserva}/estado")
+def actualizar_estado_reserva(
     id_reserva: int,
-    nuevo_estado: EstadoReserva = Body(..., embed=True, example="aprobada"),
+    estado: str,
     db: Session = Depends(get_db),
     admin: Usuario = Depends(require_scopes("admin:gestionar_reservas"))
 ):
-    """Cambiar estado de una reserva (solo admin). Estados válidos: esperando, aprobada, rechazada."""
-    reserva = crud_reserva.get_reserva_by_id(db, id_reserva)
-    if not reserva:
-        raise HTTPException(status_code=404, detail="Reserva no encontrada")
-    if reserva.estado != EstadoReserva.ESPERANDO.value: # type: ignore
-        raise HTTPException(status_code=400, detail="Solo se puede cambiar el estado de reservas en estado 'esperando'")
-
-    # Si se aprueba la reserva, actualizar el estado del espacio a "reservado"
-    if nuevo_estado.value == EstadoReserva.APROBADA.value:
-        crud_espacio.update_estado_espacio(db, reserva.id_espacio, "reservado") # type: ignore
-
-    return crud_reserva.update_estado_reserva(db, id_reserva, nuevo_estado.value)
+    return crud_reserva.update_estado_reserva(
+        db=db,
+        id_reserva=id_reserva,
+        nuevo_estado=estado
+    )

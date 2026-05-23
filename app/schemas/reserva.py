@@ -8,6 +8,9 @@ class EstadoReserva(str, Enum):
     ESPERANDO = "esperando"
     APROBADA = "aprobada"
     RECHAZADA = "rechazada"
+    INACTIVO = "inactivo"
+    MANTENIMIENTO = "mantenimiento"
+    NO_DISPONIBLE = "no disponible"
 
 class ReservaBase(BaseModel):
     id_usuario: int
