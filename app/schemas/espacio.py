@@ -6,7 +6,7 @@ from typing import Optional
 class EstadoEspacio(str, Enum):
     """Estados válidos para un espacio."""
     DISPONIBLE = "disponible"
-    OCUPADO = "ocupado"
+    RESERVADO = "reservado"
     MANTENIMIENTO = "mantenimiento"
 
 class EspacioBase(BaseModel):

@@ -5,6 +5,7 @@ from app.crud import reserva as crud_reserva
 from app.auth.auth import require_scopes, get_current_user
 from app.db import get_db
 from app.models.usuario import Usuario
+from app.crud import espacio as crud_espacio
 
 router = APIRouter(prefix="/reservas", tags=["Reservas"])
 
@@ -54,4 +55,9 @@ def cambiar_estado_reserva(
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
     if reserva.estado != EstadoReserva.ESPERANDO.value: # type: ignore
         raise HTTPException(status_code=400, detail="Solo se puede cambiar el estado de reservas en estado 'esperando'")
+
+    # Si se aprueba la reserva, actualizar el estado del espacio a "reservado"
+    if nuevo_estado.value == EstadoReserva.APROBADA.value:
+        crud_espacio.update_estado_espacio(db, reserva.id_espacio, "reservado")
+
     return crud_reserva.update_estado_reserva(db, id_reserva, nuevo_estado.value)

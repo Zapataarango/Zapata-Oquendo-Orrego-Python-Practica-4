@@ -29,3 +29,12 @@ def get_espacios_disponibles(db: Session):
 # Listar espacios (legacy)
 def get_espacios(db: Session):
     return db.query(Espacio).all()
+
+# Actualizar estado de un espacio
+def update_estado_espacio(db: Session, id_espacio: int, nuevo_estado: str):
+    espacio = db.query(Espacio).filter(Espacio.id_espacio == id_espacio).first()
+    if espacio:
+        espacio.estado = nuevo_estado
+        db.commit()
+        db.refresh(espacio)
+    return espacio
