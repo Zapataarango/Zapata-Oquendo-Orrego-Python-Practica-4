@@ -16,12 +16,12 @@ def crear_reserva(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_scopes("usuario:crear_reserva"))
 ):
-    """Crear una nueva reserva. El usuario crea una reserva para sí mismo en estado 'esperando' aprobación."""
-    reserva_data = reserva_in.dict()
-    reserva_data["id_usuario"] = user.id_usuario
-    reserva_data["estado"] = "esperando"
-    reserva_crear = ReservaCreate(**reserva_data)
-    return crud_reserva.create_reserva(db, reserva_crear)
+    """Crear una reserva (solo usuario autenticado) el formato solicitado de hora es 24 horas (HH:MM)."""
+    return crud_reserva.create_reserva(
+        db=db,
+        reserva=reserva_in,
+        id_usuario=user.id_usuario # type: ignore
+    )
 
 # Endpoint para obtener mis reservas
 @router.get("/mis-reservas", response_model=list[ReservaOut])
@@ -58,6 +58,6 @@ def cambiar_estado_reserva(
 
     # Si se aprueba la reserva, actualizar el estado del espacio a "reservado"
     if nuevo_estado.value == EstadoReserva.APROBADA.value:
-        crud_espacio.update_estado_espacio(db, reserva.id_espacio, "reservado")
+        crud_espacio.update_estado_espacio(db, reserva.id_espacio, "reservado") # type: ignore
 
     return crud_reserva.update_estado_reserva(db, id_reserva, nuevo_estado.value)

@@ -34,7 +34,7 @@ def get_espacios(db: Session):
 def update_estado_espacio(db: Session, id_espacio: int, nuevo_estado: str):
     espacio = db.query(Espacio).filter(Espacio.id_espacio == id_espacio).first()
     if espacio:
-        espacio.estado = nuevo_estado
+        espacio.estado = nuevo_estado # type: ignore
         db.commit()
         db.refresh(espacio)
     return espacio
