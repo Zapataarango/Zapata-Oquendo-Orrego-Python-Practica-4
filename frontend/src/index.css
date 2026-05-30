@@ -1,0 +1,38 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0f1117;
+  font-family: sans-serif;
+  color: #e2e8f0;
+}
+
+input:focus {
+  outline: none;
+  border-color: #4f46e5 !important;
+}
+
+select:focus {
+  outline: none;
+  border-color: #4f46e5 !important;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1d27;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2d3a;
+  border-radius: 3px;
+}
