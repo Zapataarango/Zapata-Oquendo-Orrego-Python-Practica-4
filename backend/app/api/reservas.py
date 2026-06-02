@@ -49,6 +49,8 @@ def actualizar_estado_reserva(
     db: Session = Depends(get_db),
     admin: Usuario = Depends(require_scopes("admin:gestionar_reservas"))
 ):
+    """Actualizar el estado de una reserva (solo admin). 
+    Estados válidos: esperando, aprobada, rechazada."""
     return crud_reserva.update_estado_reserva(
         db=db,
         id_reserva=id_reserva,
@@ -64,6 +66,7 @@ def cancelar_reserva(
         require_scopes("admin:cancelar_reserva")
     )
 ):
+    """Cancelar una reserva (solo admin)."""
     return crud_reserva.cancel_reserva(
         db=db,
         id_reserva=id_reserva

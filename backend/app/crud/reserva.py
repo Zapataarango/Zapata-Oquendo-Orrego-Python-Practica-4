@@ -1,13 +1,3 @@
-from datetime import datetime, timedelta
-
-from fastapi import HTTPException
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
-from app.models.espacio import Espacio
-from app.models.reserva import Reserva
-from app.schemas.reserva import EstadoReserva, ReservaCreate
-
 from datetime import datetime, timedelta, time
 
 from fastapi import HTTPException
@@ -17,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.models.espacio import Espacio
 from app.models.reserva import Reserva
 from app.schemas.reserva import EstadoReserva, ReservaCreate
-
 
 # =========================
 # Crear reserva

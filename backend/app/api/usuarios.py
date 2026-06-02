@@ -12,6 +12,7 @@ router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 # Endpoint admin: crear usuario
 @router.post("/", response_model=UsuarioOut, status_code=status.HTTP_201_CREATED)
 def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
+    """Roles válidos: esperando, aprobada, rechazada."""
     return crud_usuario.create_usuario(db, usuario)
 
 # Endpoint admin: eliminar usuario
