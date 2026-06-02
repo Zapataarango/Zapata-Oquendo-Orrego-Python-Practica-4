@@ -16,11 +16,10 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('username', correo)
-      formData.append('password', password)
-
-      const res = await api.post('/auth/token', formData)
+      const res = await api.post('/auth/token', {
+        correo,
+        password
+      })
       const token = res.data.access_token
 
       const perfil = await api.get('/usuarios/perfil/me', {
