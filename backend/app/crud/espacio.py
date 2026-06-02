@@ -1,13 +1,23 @@
 from sqlalchemy.orm import Session
 from app.models.espacio import Espacio
 from app.schemas.espacio import EspacioCreate
+from fastapi import HTTPException
 
 # Crear espacio
 def create_espacio(db: Session, espacio: EspacioCreate):
+
+    if espacio.capacidad <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="La capacidad debe ser mayor a 0"
+        )
+
     db_espacio = Espacio(**espacio.dict())
+
     db.add(db_espacio)
     db.commit()
     db.refresh(db_espacio)
+
     return db_espacio
 
 # Eliminar espacio

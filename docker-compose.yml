@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
 
     container_name: backend
+    
     ports:
       - "8000:8000"
     env_file:
@@ -12,16 +13,36 @@ services:
     depends_on:
       - postgres
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: frontend
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - backend
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
   postgres:
     image: postgres:16
     container_name: postgres
     restart: always
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: reservas
+      POSTGRES_DB: ci_grupo_2
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
