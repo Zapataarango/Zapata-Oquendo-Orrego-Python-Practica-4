@@ -3,6 +3,7 @@ from app.api import auth, usuarios, reservas, espacios
 from app.db import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -10,7 +11,6 @@ app = FastAPI(
     version="1.0.0",
     swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 
-# Configuración de CORS para permitir solicitudes desde el frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
