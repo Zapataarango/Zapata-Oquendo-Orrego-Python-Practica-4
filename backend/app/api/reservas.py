@@ -1,11 +1,10 @@
-from fastapi import Body, APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from app.schemas.reserva import ReservaCreate, ReservaOut, EstadoReserva
+from app.schemas.reserva import ActualizarEstadoReserva, ReservaCreate, ReservaOut
 from app.crud import reserva as crud_reserva
-from app.auth.auth import require_scopes, get_current_user
+from app.auth.auth import require_scopes
 from app.db import get_db
 from app.models.usuario import Usuario
-from app.crud import espacio as crud_espacio
 
 router = APIRouter(prefix="/reservas", tags=["Reservas"])
 
@@ -45,7 +44,7 @@ def todas_las_reservas(
 @router.patch("/{id_reserva}/estado", response_model=ReservaOut)
 def actualizar_estado_reserva(
     id_reserva: int,
-    estado: str,
+    estado_data: ActualizarEstadoReserva,
     db: Session = Depends(get_db),
     admin: Usuario = Depends(require_scopes("admin:gestionar_reservas"))
 ):
@@ -54,7 +53,7 @@ def actualizar_estado_reserva(
     return crud_reserva.update_estado_reserva(
         db=db,
         id_reserva=id_reserva,
-        nuevo_estado=estado
+        nuevo_estado=estado_data.estado
     )
 
 # Endpoint para que el admin cancele una reserva
