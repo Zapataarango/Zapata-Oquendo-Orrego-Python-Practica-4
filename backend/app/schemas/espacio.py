@@ -1,14 +1,14 @@
 from enum import Enum
 
 from pydantic import BaseModel
-from typing import Optional
 
 class EstadoEspacio(str, Enum):
     """Estados válidos para un espacio."""
     DISPONIBLE = "disponible"
     RESERVADO = "reservado"
+    INACTIVO = "inactivo"
     MANTENIMIENTO = "mantenimiento"
-
+  
 class EspacioBase(BaseModel):
     nombre: str
     ubicacion: str
