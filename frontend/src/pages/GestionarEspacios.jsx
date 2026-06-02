@@ -42,7 +42,7 @@ export default function GestionarEspacios() {
       await api.delete(`/espacios/${id}`)
       cargarEspacios()
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al eliminar el espacio')
+      setError(err.response?.data?.detail || 'Error al eliminar el espacio, espacio cuenta con reservas activas')
     }
   }
 
