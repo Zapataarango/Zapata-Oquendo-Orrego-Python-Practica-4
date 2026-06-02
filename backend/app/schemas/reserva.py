@@ -13,6 +13,9 @@ class EstadoReserva(str, Enum):
     MANTENIMIENTO = "mantenimiento"
     NO_DISPONIBLE = "no disponible"
 
+class ActualizarEstadoReserva(BaseModel):
+    estado: EstadoReserva
+
 class ReservaBase(BaseModel):
     id_usuario: int
     id_espacio: int
